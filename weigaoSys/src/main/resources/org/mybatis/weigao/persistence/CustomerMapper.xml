@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.mybatis.weigao.persistence.CustomerMapper">
+
+    <select id="countCustomerSize" parameterType="Customer" resultType="int">
+        select count(*)
+        FROM [WEGO].[dbo].[bCUSTOMER] AS CUST LEFT OUTER JOIN
+        dbo.b0Port AS P1 ON CUST.PortID = P1.UID LEFT OUTER JOIN
+        dbo.b0Province AS P2 ON P1.ProvinceID = P2.UID
+        WHERE CUST.IsDisable = 0
+        <if test="customerName != null">
+            AND CUST.CUSTOMER like '%'+#{customerName}+'%'
+        </if>
+        <if test="salesRegion != null">
+            AND K3.SRegion like '%'+#{salesRegion}+'%'
+        </if>
+        <if test="clerk != null">
+            AND CUST.clerk = #{clerk}
+        </if>
+        <if test="province != null">
+            AND P2.Province like '%'+#{province}+'%'
+        </if>
+        <if test="port != null">
+            AND port like '%'+#{port}+'%'
+        </if>
+        <if test="portID != null">
+            AND portID like '%'+#{portID}+'%'
+        </if>
+        <if test="uid != null and uid != 0 ">
+            AND CUST.uid =#{uid}
+        </if>
+        <if test="manager !=null">
+            and CUST.clerk in ( SELECT [Clerk]
+            from [K3_Salesman] a where (select top 1 manager from SalesRegion where a.SRegion = Region)= #{manager})
+        </if>
+        <if test="managerEng !=null">
+            and CUST.clerk in (SELECT [Clerk]
+            from [K3_Salesman] a where SRegion in (select SalesRegion from b2EngineerComplaint where
+            Engineer=#{managerEng}))
+        </if>
+        <if test="preparerManager !=null">
+            and CUST.Clerk in (select sales from b2SalesFloor where FLOOR = #{preparerManager})
+        </if>
+        <if test="custVal !=null">
+            and CUST.custVal = #{custVal}
+        </if>
+    </select>
+
+    <select id="getCustomer" parameterType="Customer" resultType="Customer">
+        select * from (
+        SELECT ROW_NUMBER() OVER(ORDER BY CUST.CUSTOMER) as rowNum ,
+        CUST.uid
+        ,CUST.IsSelect
+        ,CUST.IsDisable
+        ,CUST.Creator
+        ,CUST.CreationDate
+        ,CUST.Operator
+        ,CUST.OperDate
+        ,CUST.CUSTOMER as customerName
+        ,CUST.ZECT
+        ,CUST.Coop_Type as coopType
+        ,CUST.CustVAL
+        ,CUST.Feedback
+        ,CUST.Address
+        ,CUST.Website
+        ,CUST.HealthClass
+        ,CUST.HealtMemo
+        ,CUST.Hierarchy
+        ,CUST.Open_DT as openDt
+        ,CUST.Coop_DT
+        ,CUST.PortID
+        ,CUST.Clerk
+        ,CUST.SalesRegion
+        ,K3.SRegion
+        ,(SELECT top 1 Manager FROM SalesRegion WHERE Region = K3.SRegion) as Manager
+        ,CUST.LabOffice
+        ,CUST.LabOMemo
+        ,CUST.LabTEL
+        ,CUST.HospitalMemo
+        ,CUST.PostalCode
+        ,CUST.IsActive
+        ,CUST.IsDirect
+        ,CUST.ChargeLimit
+        ,case CUST.IsVerify when 0 then '否' when 1 then '是' end as verify
+        ,CUST.Verifier
+        ,CUST.VerifyDate
+        ,(SELECT TOP 1 FLOOR FROM b2SalesFloor WHERE Sales = CUST.Clerk) as salesFloor
+        ,P1.Port, P1.ProvinceID, P2.Province,
+        (SELECT TOP 1 uid
+        FROM dbo.oSurvey A
+        WHERE (A.CustomerID=CUST.UID) AND (A.IsVerify = 0)) as surveyId,
+        (SELECT TOP 1 IsCheck
+        FROM dbo.oSurvey A
+        WHERE (A.CustomerID=CUST.UID) AND (A.IsVerify = 0)) as isCheck,
+        (SELECT TOP 1 SurveyNo
+        FROM dbo.oSurvey A
+        WHERE (A.CustomerID=CUST.UID) AND (A.IsVerify = 0)) as surveyNo
+        FROM [WEGO].[dbo].[bCUSTOMER] AS CUST LEFT OUTER JOIN
+        dbo.b0Port AS P1 ON CUST.PortID = P1.UID LEFT OUTER JOIN
+        dbo.b0Province AS P2 ON P1.ProvinceID = P2.UID
+        LEFT OUTER JOIN K3_Salesman AS K3 on CUST.Clerk=K3.Clerk
+        WHERE CUST.IsDisable = 0
+        <if test="customerName != null">
+            AND CUST.CUSTOMER like '%'+#{customerName}+'%'
+        </if>
+        <if test="salesRegion != null">
+            AND K3.SRegion like '%'+#{salesRegion}+'%'
+        </if>
+        <if test="clerk != null">
+            AND CUST.clerk = #{clerk}
+        </if>
+        <if test="province != null">
+            AND P2.Province like '%'+#{province}+'%'
+        </if>
+        <if test="port != null">
+            AND port like '%'+#{port}+'%'
+        </if>
+        <if test="portID != null">
+            AND portID like '%'+#{portID}+'%'
+        </if>
+        <if test="uid != null and uid != 0 ">
+            AND CUST.uid =#{uid}
+        </if>
+        <if test="manager !=null">
+            and CUST.clerk in ( SELECT [Clerk]
+            from [K3_Salesman] a where (select top 1 manager from SalesRegion where a.SRegion = Region)= #{manager})
+        </if>
+        <if test="managerEng !=null">
+            and CUST.clerk in (SELECT [Clerk]
+            from [K3_Salesman] a where SRegion in (select SalesRegion from b2EngineerComplaint where
+            Engineer=#{managerEng}))
+        </if>
+        <if test="preparerManager !=null">
+            and CUST.Clerk in (select sales from b2SalesFloor where FLOOR = #{preparerManager})
+        </if>
+        <if test="custVal !=null">
+            and CUST.custVal = #{custVal}
+        </if>
+        ) as t
+        where  <![CDATA[rowNum>#{fromIndex} and rowNum<= #{toIndex}]]>
+    </select>
+
+    <update id="updateCustomer" parameterType="Customer">
+        UPDATE dbo.bCUSTOMER
+        SET
+        <!--Creator = #{creator},-->
+        <!--CreationDate = #{creationDate},-->
+        Operator = #{operator},
+        OperDate = getdate(),
+        <!--Customer = #{customerName},-->
+        Coop_Type = #{coopType},
+        CustVAL = #{custVal} ,
+        Address = #{address} ,
+        Website = #{website},
+        HealthClass = #{healthClass},
+        <!--HealtMemo = #{healtMemo},-->
+        Hierarchy = #{hierarchy},
+        Open_DT = #{openDt} ,
+        PortID = #{portID},
+        LabOffice = #{labOffice},
+        LabOMemo = #{labOMemo},
+        LabTEL = #{labTEL},
+        HospitalMemo = #{hospitalMemo},
+        ChargeLimit = #{chargeLimit},
+        Feedback = #{feedback},
+        PostalCode = #{postalCode},
+        IsActive = #{isActive},
+        IsDirect = #{isDirect}
+
+        <!--Verifier = #{verifier}, -->
+        <!--VerifyDate = #{verifyDate}   -->
+        WHERE UID = #{uid}
+    </update>
+
+</mapper>
